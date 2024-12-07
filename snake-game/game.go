@@ -142,15 +142,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			true,
 		)
 
-		vector.DrawFilledRect(
-			screen,
-			float32(g.food.x*GridSize),
-			float32(g.food.y*GridSize),
-			GridSize,
-			GridSize,
-			color.RGBA{255, 0, 0, 255},
-			true,
+		options := &ebiten.DrawImageOptions{}
+
+		foodWidth := float64(Food.Bounds().Dx())
+		foodHeight := float64(Food.Bounds().Dy())
+		scaleX := float64(GridSize) / foodWidth
+		scaleY := float64(GridSize) / foodHeight
+		options.GeoM.Scale(scaleX, scaleY)
+
+		options.GeoM.Translate(
+			float64(g.food.x*GridSize),
+			float64(g.food.y*GridSize),
 		)
+
+		screen.DrawImage(Food, options)
 	}
 
 	if g.gameOver {

@@ -68,10 +68,13 @@ func (g *Game) updateSnake(snake *[]Point, dir Point) {
 
 	if g.isCollition(newHead, *snake) {
 		g.gameOver = true
+		GlobalAudioManager.StopMusic()
+		GlobalAudioManager.PlaySound("game-over")
 	}
 
 	if g.food == newHead {
 		*snake = append([]Point{newHead}, *snake...)
+		GlobalAudioManager.PlaySound("food")
 		g.spawnFood()
 	} else {
 		*snake = append([]Point{newHead}, (*snake)[:len(*snake)-1]...)
@@ -156,6 +159,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			Size:   48,
 		}
 		w, h := text.Measure("Game Over!", face, face.Size)
+		vector.DrawFilledRect(
+			screen,
+			float32((ScreenWidth-w)/2-GridSize),
+			float32((ScreenHeight-h)/2-GridSize),
+			float32(w+GridSize*2),
+			float32(h+GridSize*2),
+			color.Black,
+			true,
+		)
 		options := &text.DrawOptions{}
 		options.GeoM.Translate((ScreenWidth-w)/2, (ScreenHeight-h)/2)
 		text.Draw(screen, "Game Over!", face, options)

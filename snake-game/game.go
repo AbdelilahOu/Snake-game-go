@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -17,10 +18,11 @@ const (
 )
 
 var (
-	Up    = Point{x: 0, y: -1}
-	Down  = Point{x: 0, y: 1}
-	Left  = Point{x: -1, y: 0}
-	Right = Point{x: 1, y: 0}
+	Up              = Point{x: 0, y: -1}
+	Down            = Point{x: 0, y: 1}
+	Left            = Point{x: -1, y: 0}
+	Right           = Point{x: 1, y: 0}
+	MplusFaceSource *text.GoTextFaceSource
 )
 
 type Game struct {
@@ -28,6 +30,7 @@ type Game struct {
 	food       Point
 	direction  Point
 	lastUpdate time.Time
+	gameOver   bool
 }
 
 func CreateNewGame() *Game {
@@ -45,6 +48,7 @@ func CreateNewGame() *Game {
 			x: rand.Intn(ScreenWidth / GridSize),
 			y: rand.Intn(ScreenHeight / GridSize),
 		},
+		gameOver: false,
 	}
 }
 
@@ -62,12 +66,33 @@ func (g *Game) updateSnake(snake *[]Point, dir Point) {
 		y: head.y + dir.y,
 	}
 
+	if g.isCollition(newHead, *snake) {
+		g.gameOver = true
+	}
+
 	if g.food == newHead {
 		*snake = append([]Point{newHead}, *snake...)
 		g.spawnFood()
 	} else {
 		*snake = append([]Point{newHead}, (*snake)[:len(*snake)-1]...)
 	}
+}
+
+func (g Game) isCollition(head Point, snake []Point) bool {
+	if head.x < 0 || head.y < 0 {
+		return true
+	}
+	if head.x >= ScreenWidth/GridSize || head.y >= ScreenHeight/GridSize {
+		return true
+	}
+
+	for _, p := range snake {
+		if p == head {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (g *Game) updateDirection() {
@@ -90,6 +115,9 @@ func (g *Game) updateDirection() {
 }
 
 func (g *Game) Update() error {
+	if g.gameOver {
+		return nil
+	}
 	g.updateDirection()
 	if time.Since(g.lastUpdate) < GameSpeed {
 		return nil
@@ -120,6 +148,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			color.RGBA{255, 0, 0, 255},
 			true,
 		)
+	}
+
+	if g.gameOver {
+		face := &text.GoTextFace{
+			Source: MplusFaceSource,
+			Size:   48,
+		}
+		w, h := text.Measure("Game Over!", face, face.Size)
+		options := &text.DrawOptions{}
+		options.GeoM.Translate((ScreenWidth-w)/2, (ScreenHeight-h)/2)
+		text.Draw(screen, "Game Over!", face, options)
 	}
 }
 

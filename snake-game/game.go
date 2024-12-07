@@ -2,6 +2,7 @@ package SnakeGame
 
 import (
 	"image/color"
+	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -24,6 +25,7 @@ var (
 
 type Game struct {
 	snake      []Point
+	food       Point
 	direction  Point
 	lastUpdate time.Time
 }
@@ -39,6 +41,17 @@ func CreateNewGame() *Game {
 			y: 0,
 		},
 		lastUpdate: time.Now(),
+		food: Point{
+			x: rand.Intn(ScreenWidth / GridSize),
+			y: rand.Intn(ScreenHeight / GridSize),
+		},
+	}
+}
+
+func (g *Game) spawnFood() {
+	g.food = Point{
+		x: rand.Intn(ScreenWidth / GridSize),
+		y: rand.Intn(ScreenHeight / GridSize),
 	}
 }
 
@@ -49,8 +62,12 @@ func (g *Game) updateSnake(snake *[]Point, dir Point) {
 		y: head.y + dir.y,
 	}
 
-	*snake = append([]Point{newHead}, (*snake)[:len(*snake)-1]...)
-
+	if g.food == newHead {
+		*snake = append([]Point{newHead}, *snake...)
+		g.spawnFood()
+	} else {
+		*snake = append([]Point{newHead}, (*snake)[:len(*snake)-1]...)
+	}
 }
 
 func (g *Game) updateDirection() {
@@ -91,6 +108,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			GridSize,
 			GridSize,
 			color.White,
+			true,
+		)
+
+		vector.DrawFilledRect(
+			screen,
+			float32(g.food.x*GridSize),
+			float32(g.food.y*GridSize),
+			GridSize,
+			GridSize,
+			color.RGBA{255, 0, 0, 255},
 			true,
 		)
 	}

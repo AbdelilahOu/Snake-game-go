@@ -40,7 +40,7 @@ func init() {
 // LoadSoundFile loads an embedded MP3 sound file
 func (am *AudioManager) LoadSoundFile(name string, soundFile []byte) error {
 	// Decode the MP3 file
-	decoded, err := mp3.Decode(am.audioContext, bytes.NewReader(soundFile))
+	decoded, err := mp3.DecodeWithoutResampling(bytes.NewReader(soundFile))
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (am *AudioManager) LoadSoundFile(name string, soundFile []byte) error {
 // LoadMusicFile loads an embedded MP3 music file
 func (am *AudioManager) LoadMusicFile(name string, musicFile []byte) error {
 	// Decode the MP3 file
-	decoded, err := mp3.Decode(am.audioContext, bytes.NewReader(musicFile))
+	decoded, err := mp3.DecodeWithoutResampling(bytes.NewReader(musicFile))
 	if err != nil {
 		return err
 	}

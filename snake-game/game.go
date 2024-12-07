@@ -100,18 +100,30 @@ func (g Game) isCollition(head Point, snake []Point) bool {
 
 func (g *Game) updateDirection() {
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		if len(g.snake) > 1 && g.direction == Down {
+			return
+		}
 		g.direction = Up
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+		if len(g.snake) > 1 && g.direction == Up {
+			return
+		}
 		g.direction = Down
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+		if len(g.snake) > 1 && g.direction == Right {
+			return
+		}
 		g.direction = Left
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+		if len(g.snake) > 1 && g.direction == Left {
+			return
+		}
 		g.direction = Right
 		return
 	}
@@ -141,22 +153,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			color.White,
 			true,
 		)
-
-		options := &ebiten.DrawImageOptions{}
-
-		foodWidth := float64(Food.Bounds().Dx())
-		foodHeight := float64(Food.Bounds().Dy())
-		scaleX := float64(GridSize) / foodWidth
-		scaleY := float64(GridSize) / foodHeight
-		options.GeoM.Scale(scaleX, scaleY)
-
-		options.GeoM.Translate(
-			float64(g.food.x*GridSize),
-			float64(g.food.y*GridSize),
-		)
-
-		screen.DrawImage(Food, options)
 	}
+
+	options := &ebiten.DrawImageOptions{}
+
+	foodWidth := float64(Food.Bounds().Dx())
+	foodHeight := float64(Food.Bounds().Dy())
+	scaleX := float64(GridSize) / foodWidth
+	scaleY := float64(GridSize) / foodHeight
+	options.GeoM.Scale(scaleX, scaleY)
+
+	options.GeoM.Translate(
+		float64(g.food.x*GridSize),
+		float64(g.food.y*GridSize),
+	)
+
+	screen.DrawImage(Food, options)
 
 	if g.gameOver {
 		face := &text.GoTextFace{

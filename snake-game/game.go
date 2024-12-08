@@ -32,7 +32,6 @@ type Game struct {
 	direction  Point
 	lastUpdate time.Time
 	gameOver   bool
-	background *Background
 }
 
 func CreateNewGame() *Game {
@@ -50,8 +49,7 @@ func CreateNewGame() *Game {
 			x: rand.Intn(ScreenWidth / GridSize),
 			y: rand.Intn(ScreenHeight / GridSize),
 		},
-		gameOver:   false,
-		background: CreateNewBackground(),
+		gameOver: false,
 	}
 }
 
@@ -181,13 +179,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if !g.background.rendered {
-		for y := 0; y < ScreenHeight/GridSize; y++ {
-			for x := 0; x < ScreenWidth/GridSize; x++ {
-				g.drawImage(screen, Tile, x, y)
-			}
+	for y := 0; y < ScreenHeight/GridSize; y++ {
+		for x := 0; x < ScreenWidth/GridSize; x++ {
+			g.drawImage(screen, Tile, x, y)
 		}
-		g.background.rendered = true
 	}
 	for _, p := range g.snake {
 		vector.DrawFilledRect(

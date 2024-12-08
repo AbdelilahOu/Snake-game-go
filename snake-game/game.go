@@ -19,11 +19,11 @@ const (
 )
 
 var (
-	Up              = Point{x: 0, y: -1}
-	Down            = Point{x: 0, y: 1}
-	Left            = Point{x: -1, y: 0}
-	Right           = Point{x: 1, y: 0}
-	MplusFaceSource *text.GoTextFaceSource
+	Up            = Point{x: 0, y: -1}
+	Down          = Point{x: 0, y: 1}
+	Left          = Point{x: -1, y: 0}
+	Right         = Point{x: 1, y: 0}
+	PixelFontFace *text.GoTextFaceSource
 )
 
 type Game struct {
@@ -200,7 +200,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	if g.gameOver {
 		face := &text.GoTextFace{
-			Source: MplusFaceSource,
+			Source: PixelFontFace,
 			Size:   48,
 		}
 		w, h := text.Measure("Game Over!", face, face.Size)

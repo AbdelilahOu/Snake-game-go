@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	SnakeGame.MplusFaceSource = s
+	SnakeGame.PixelFontFace = s
 	game := SnakeGame.CreateNewGame()
 
 	ebiten.SetWindowSize(SnakeGame.ScreenWidth, SnakeGame.ScreenHeight)

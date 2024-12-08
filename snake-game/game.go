@@ -1,6 +1,7 @@
 package SnakeGame
 
 import (
+	"fmt"
 	"image/color"
 	"math/rand"
 	"time"
@@ -31,6 +32,7 @@ type Game struct {
 	direction  Point
 	lastUpdate time.Time
 	gameOver   bool
+	background *Background
 }
 
 func CreateNewGame() *Game {
@@ -48,7 +50,8 @@ func CreateNewGame() *Game {
 			x: rand.Intn(ScreenWidth / GridSize),
 			y: rand.Intn(ScreenHeight / GridSize),
 		},
-		gameOver: false,
+		gameOver:   false,
+		background: CreateNewBackground(),
 	}
 }
 
@@ -98,7 +101,20 @@ func (g Game) isCollition(head Point, snake []Point) bool {
 	return false
 }
 
-func (g *Game) updateDirection() {
+func (g *Game) handleKeyStroke() {
+	if ebiten.IsKeyPressed(ebiten.KeyR) {
+		if g.gameOver {
+			g.snake = []Point{{
+				x: ScreenWidth / GridSize / 2,
+				y: ScreenHeight / GridSize / 2,
+			}}
+			g.spawnFood()
+			GlobalAudioManager.PlayMusic("music")
+			g.gameOver = false
+		}
+		return
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
 		if len(g.snake) > 1 && g.direction == Down {
 			return
@@ -129,11 +145,33 @@ func (g *Game) updateDirection() {
 	}
 }
 
+func (g *Game) drawImage(screen *ebiten.Image, image *ebiten.Image, x, y int) error {
+	if image == nil {
+		return fmt.Errorf("image is nil at (%d, %d)", x, y)
+	}
+
+	options := &ebiten.DrawImageOptions{}
+
+	imageWidth := float64(image.Bounds().Dx())
+	imageHeight := float64(image.Bounds().Dy())
+	scaleX := float64(GridSize) / imageWidth
+	scaleY := float64(GridSize) / imageHeight
+	options.GeoM.Scale(scaleX, scaleY)
+
+	options.GeoM.Translate(
+		float64(x*GridSize),
+		float64(y*GridSize),
+	)
+
+	screen.DrawImage(image, options)
+	return nil
+}
+
 func (g *Game) Update() error {
+	g.handleKeyStroke()
 	if g.gameOver {
 		return nil
 	}
-	g.updateDirection()
 	if time.Since(g.lastUpdate) < GameSpeed {
 		return nil
 	}
@@ -143,6 +181,14 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	if !g.background.rendered {
+		for y := 0; y < ScreenHeight/GridSize; y++ {
+			for x := 0; x < ScreenWidth/GridSize; x++ {
+				g.drawImage(screen, Tile, x, y)
+			}
+		}
+		g.background.rendered = true
+	}
 	for _, p := range g.snake {
 		vector.DrawFilledRect(
 			screen,
@@ -155,20 +201,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		)
 	}
 
-	options := &ebiten.DrawImageOptions{}
-
-	foodWidth := float64(Food.Bounds().Dx())
-	foodHeight := float64(Food.Bounds().Dy())
-	scaleX := float64(GridSize) / foodWidth
-	scaleY := float64(GridSize) / foodHeight
-	options.GeoM.Scale(scaleX, scaleY)
-
-	options.GeoM.Translate(
-		float64(g.food.x*GridSize),
-		float64(g.food.y*GridSize),
-	)
-
-	screen.DrawImage(Food, options)
+	g.drawImage(screen, Food, g.food.x, g.food.y)
 
 	if g.gameOver {
 		face := &text.GoTextFace{
